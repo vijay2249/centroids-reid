@@ -17,9 +17,9 @@ _C = CN()
 # -----------------------------------------------------------------------------
 _C.MODEL = CN()
 # Name of backbone
-_C.MODEL.NAME = "resnet50"
+_C.MODEL.NAME = "resnet18"
 # Size of embeddings from backbone
-_C.MODEL.BACKBONE_EMB_SIZE = 2048
+_C.MODEL.BACKBONE_EMB_SIZE = 512
 # Last stride of backbone
 _C.MODEL.LAST_STRIDE = 1
 # Use ImageNet pretrained model to initialize backbone or use 'self' trained
