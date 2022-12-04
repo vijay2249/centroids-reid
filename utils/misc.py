@@ -103,7 +103,7 @@ def run_single(cfg, method, logger_save_dir):
         max_epochs=cfg.SOLVER.MAX_EPOCHS,
         logger=loggers,
         fast_dev_run=False,
-        check_val_every_n_epoch=cfg.SOLVER.EVAL_PERIOD,
+        check_val_every_n_epoch=cfg.SOLVER.EVAL_PERIOD, #where is this used and how it effects the output
         accelerator=cfg.SOLVER.DIST_BACKEND,
         num_sanity_val_steps=0,
         replace_sampler_ddp=False,

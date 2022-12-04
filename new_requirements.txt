@@ -1,0 +1,9 @@
+einops
+mlflow
+opencv-python
+pytorch-lightning
+torch
+torchvision
+tqdm
+yacs
+shutil

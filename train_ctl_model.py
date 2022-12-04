@@ -194,9 +194,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.config_file != "":
-        cfg.merge_from_file(args.config_file)
+        cfg.merge_from_file(args.config_file) #cfg is config import
     cfg.merge_from_list(args.opts)
 
-    logger_save_dir = f"{Path(__file__).stem}"
+    logger_save_dir = f"{Path(__file__).stem}" #file name without the final extension if multiple extensions are added at the end
 
     run_main(cfg, CTLModel, logger_save_dir)
