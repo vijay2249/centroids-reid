@@ -9,11 +9,12 @@ Adapted and extended by:
 """
 
 import numpy as np
-
 from tqdm import tqdm
+from config import defaults
+
 
 k_list = [1, 5, 10, 20, 50]
-
+dataset = defaults._C.DATASETS.NAMES
 
 def top_k_retrieval(row_matches: np.ndarray, k: list):
     results = []
@@ -41,6 +42,7 @@ def eval_func(
     num_valid_q = 0.0  # number of valid query
     topk_results = []  # Store topk retureval
     single_performance = []
+
     for q_idx in tqdm(range(num_q)):
         # get query pid and camid
         q_pid = q_pids[q_idx]
@@ -78,15 +80,28 @@ def eval_func(
         tmp_cmc = np.asarray(tmp_cmc) * orig_cmc
         AP = tmp_cmc.sum() / num_rel
         all_AP.append(AP)
+
+
         # Save AP for each query to allow finding worst performing samples
         single_performance.append(list([q_idx, q_pid, AP]))
         # Get topk accuracy for topk
         topk_results.append(top_k_retrieval(orig_cmc, k_list))
+    
+    #write all the q_pid andq_camid and AP to a log file 
+    #create log folder in home directory of the project
+    # logs file is generated while training stage and in the same folder we are saving this mAP values related to the dataset
+    try:
+        with open(f"../../logs/{dataset}/all_AP_performance.log", "a") as f:
+            print(single_performance, file=f)
+    except FileNotFoundError:
+        with open(f"../../logs/{dataset}/all_AP_performance.log", "w") as f:
+            print(single_performance, file=f)
 
     all_cmc = np.asarray(all_cmc).astype(np.float32)
     all_cmc = all_cmc.sum(0) / num_valid_q
+    print(all_AP)
     mAP = np.mean(all_AP)
-    all_topk = np.vstack(topk_results)
+    all_topk = np.vstack(topk_results)  
     all_topk = np.mean(all_topk, 0)
 
     return all_cmc, mAP, all_topk, np.array(single_performance)

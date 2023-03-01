@@ -40,6 +40,25 @@ def euclidean_dist(x, y):
     dist = dist.clamp(min=1e-12).sqrt()  # for numerical stability
     return dist
 
+# distance metric using https://xlinux.nist.gov/dads/HTML/lmdistance.html formula for m-dimension points
+def lm(x,y):
+    """
+    Args:
+      x: pytorch Variable, with shape [m, d]
+      y: pytorch Variable, with shape [n, d]
+    Returns:
+      dist: pytorch Variable, with shape [m, n]
+    """
+    m, n, d = x.size(0), y.size(0), x.size(1) #sizes
+    xx = torch.pow(x, d).sum(1, keepdim=True).expand(m, n)
+    yy = torch.pow(y, d).sum(1, keepdim=True).expand(n, m).t()
+    dist = xx + yy
+    dist.addmm_(1, -2, x.float(), y.float().t())
+    dist = torch.pow(dist, 1/d)
+    # dist = dist.clamp(min=1e-12).sqrt()  # for numerical stability
+    return dist
+
+
 
 def cosine_similarity(x:torch.Tensor,y:torch.Tensor, eps:float=1e-12) -> torch.Tensor:
     """
