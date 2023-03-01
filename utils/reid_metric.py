@@ -109,6 +109,7 @@ class R1_mAP:
             results.append(distmat_temp)
         return np.hstack(results)
 
+    # features depends on camids depending on the paramter is set to false or true(default is false)
     def compute(self, feats, pids, camids, respect_camids=False):
         if self.feat_norm:
             print("The test feature is normalized")

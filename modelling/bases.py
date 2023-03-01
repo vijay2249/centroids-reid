@@ -177,9 +177,7 @@ class ModelBase(pl.LightningModule):
         return {"emb": emb, "labels": class_labels, "camid": camid, "idx": idx}
 
     @rank_zero_only
-    def validation_create_centroids(
-        self, embeddings, labels, camids, respect_camids=False
-    ):
+    def validation_create_centroids(self, embeddings, labels, camids, respect_camids=False):
         num_query = self.hparams.num_query
         # Keep query data samples seperated
         embeddings_query = embeddings[:num_query].cpu()

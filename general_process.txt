@@ -1,1 +1,29 @@
 Start with train_ctl_model.py file
+
+
+Losses used:
+  1. query_xent
+  2. query_triplet
+  3. query_center
+  4. centroid_triplet
+
+
+modelling/bases.py : => static method => _calculate_centroids
+
+config/defaults.py => :121 => 
+
+utils/reid_metric.py => R1_mAP class, distance measures
+
+modelling/bases.py => ModelBase class => get_val_metrics => :290 => logs mAP and top-k values
+
+
+image is converted into rgb mode and saved with same file name
+from scripts => convert_to_jpg.py => transform_image
+
+printing is all done mostly from the modelling/bases.py file 
+
+----- related to centroids
+config/defaults.py => :31-32
+
+validation_create_centroids => return centroids_embeddings, centroids_labels, centroids_camids
+
