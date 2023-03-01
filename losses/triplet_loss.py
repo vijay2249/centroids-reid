@@ -41,7 +41,7 @@ def euclidean_dist(x, y):
     return dist
 
 # distance metric using https://xlinux.nist.gov/dads/HTML/lmdistance.html formula for m-dimension points
-def lm(x,y):
+def lm_metric(x,y):
     """
     Args:
       x: pytorch Variable, with shape [m, d]
@@ -154,6 +154,8 @@ class TripletLoss(object):
             self.dist_func = cosine_dist
         elif dist_func == 'euclidean':
             self.dist_func = euclidean_dist
+        elif dist_func == 'lm_metric':
+            self.dist_func = lm_metric
 
     def __call__(self, global_feat, labels, warmup_margin=False, print_data=False, normalize_feature=False, mask=None):
         if normalize_feature:

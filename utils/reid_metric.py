@@ -58,12 +58,32 @@ def get_cosine(x: torch.Tensor, y: torch.Tensor, eps: float = 1e-12) -> torch.Te
     sim_mt = cosine_similarity(x, y, eps)
     return torch.abs(1 - sim_mt).clamp(min=eps)
 
+# distance metric using https://xlinux.nist.gov/dads/HTML/lmdistance.html formula for m-dimension points
+def lm_metric(x,y):
+    """
+    Args:
+      x: pytorch Variable, with shape [m, d]
+      y: pytorch Variable, with shape [n, d]
+    Returns:
+      dist: pytorch Variable, with shape [m, n]
+    """
+    m, n, d = x.size(0), y.size(0), x.size(1) #sizes
+    xx = torch.pow(x, d).sum(1, keepdim=True).expand(m, n)
+    yy = torch.pow(y, d).sum(1, keepdim=True).expand(n, m).t()
+    dist = xx + yy
+    dist.addmm_(1, -2, x.float(), y.float().t())
+    dist = torch.pow(dist, 1/d)
+    # dist = dist.clamp(min=1e-12).sqrt()  # for numerical stability
+    return dist
+
 
 def get_dist_func(func_name="euclidean"):
     if func_name == "cosine":
         dist_func = get_cosine
     elif func_name == "euclidean":
         dist_func = get_euclidean
+    elif func_name == " ":
+        dist_func = lm_metric
     print(f"Using {func_name} as distance function during evaluation")
     return dist_func
 
