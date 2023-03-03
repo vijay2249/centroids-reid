@@ -11,7 +11,9 @@ Adapted and extended by:
 import numpy as np
 from tqdm import tqdm
 from config import defaults
-
+import os
+from os import path
+import pathlib
 
 k_list = [1, 5, 10, 20, 50]
 dataset = defaults._C.DATASETS.NAMES
@@ -87,9 +89,13 @@ def eval_func(
         # Get topk accuracy for topk
         topk_results.append(top_k_retrieval(orig_cmc, k_list))
     
-    #write all the q_pid andq_camid and AP to a log file 
+    #write all the q_pid and q_camid and AP to a log file 
     #create log folder in home directory of the project
     # logs file is generated while training stage and in the same folder we are saving this mAP values related to the dataset
+    try:
+        current_file_path = os.path.dirname(os.path.abspath(__file__))
+    except:
+        pass
     try:
         with open(f"../../logs/{dataset}/all_AP_performance.log", "a") as f:
             print(single_performance, file=f)

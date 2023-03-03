@@ -11,6 +11,8 @@ Adapted and extended by:
 import torch
 import torch.nn.functional as F
 from torch import nn
+import torchmetrics
+from torchmetrics.functional import pairwise_manhattan_distance
 
 
 def normalize(x, axis=-1):
@@ -36,7 +38,7 @@ def euclidean_dist(x, y):
     xx = torch.pow(x, 2).sum(1, keepdim=True).expand(m, n)
     yy = torch.pow(y, 2).sum(1, keepdim=True).expand(n, m).t()
     dist = xx + yy
-    dist.addmm_(1, -2, x.float(), y.float().t())
+    dist.addmm_(x.float(), y.float().t(),beta=1,alpha=-2)
     dist = dist.clamp(min=1e-12).sqrt()  # for numerical stability
     return dist
 
@@ -48,16 +50,25 @@ def lm_metric(x,y):
       y: pytorch Variable, with shape [n, d]
     Returns:
       dist: pytorch Variable, with shape [m, n]
+
+    Check for dtype of the value in the tensor
+    the p value used in the cdist function, have to make it a global var
     """
-    m, n, d = x.size(0), y.size(0), x.size(1) #sizes
-    xx = torch.pow(x, d).sum(1, keepdim=True).expand(m, n)
-    yy = torch.pow(y, d).sum(1, keepdim=True).expand(n, m).t()
-    dist = xx + yy
-    dist.addmm_(1, -2, x.float(), y.float().t())
-    dist = torch.pow(dist, 1/d)
-    # dist = dist.clamp(min=1e-12).sqrt()  # for numerical stability
+    x.unsequeeze_(0)
+    y.unsequeeze_(0)
+    dist = torch.cdist(x,y,p=10)
     return dist
 
+def manhattan_dist(x,y):
+    """
+    Args:
+      x: pytorch Variable, with shape [m, d]
+      y: pytorch Variable, with shape [n, d]
+    Returns:
+      dist: pytorch Variable, with shape [m, n]
+    """
+    return pairwise_manhattan_distance(x, y)
+    
 
 
 def cosine_similarity(x:torch.Tensor,y:torch.Tensor, eps:float=1e-12) -> torch.Tensor:
@@ -143,8 +154,9 @@ class TripletLoss(object):
     Related Triplet Loss theory can be found in paper 'In Defense of the Triplet
     Loss for Person Re-Identification'."""
 
-    def __init__(self, margin=None, dist_func='euclidean'):
+    def __init__(self, margin=None, dist_func='euclidean',pca_k=1024):
         self.margin = margin
+        self.pca_k = pca_k
         if margin is not None:
             self.ranking_loss = nn.MarginRankingLoss(margin=margin)
         else:
@@ -156,11 +168,20 @@ class TripletLoss(object):
             self.dist_func = euclidean_dist
         elif dist_func == 'lm_metric':
             self.dist_func = lm_metric
+        elif dist_func == "manhattan":
+            self.dist_func = manhattan_dist
+    
+    def pca_then_dist(self,x:torch.Tensor,y:torch.Tensor):
+        _,_,v=torch.pca_lowrank(x)
+        x=torch.matmul(x,v[:,:self.pca_k])
+        _,_,v=torch.pca_lowrank(y)
+        y=torch.matmul(y,v[:,:self.pca_k])
+        return self.dist_func(x,y)
 
     def __call__(self, global_feat, labels, warmup_margin=False, print_data=False, normalize_feature=False, mask=None):
         if normalize_feature:
             global_feat = normalize(global_feat, axis=-1)
-        dist_mat = self.dist_func(global_feat, global_feat)
+        dist_mat = self.pca_then_dist(global_feat, global_feat)
         dist_ap, dist_an = hard_example_mining(
             dist_mat, labels)
 

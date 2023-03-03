@@ -97,7 +97,7 @@ _C.SOLVER.MOMENTUM = 0.9
 # Margin of triplet loss
 _C.SOLVER.MARGIN = 0.5
 # Function used to compute distance (euclidean or cosine for now)
-_C.SOLVER.DISTANCE_FUNC = "euclidean"
+_C.SOLVER.DISTANCE_FUNC = "lm_metric" #changed value from euclidean to lm_metric
 # # Margin of cluster
 _C.SOLVER.CLUSTER_MARGIN = 0.3
 # # Learning rate of SGD to learn the centers of center loss
